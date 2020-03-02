@@ -6,13 +6,13 @@ Por David Gamaliel Arcos Bravo
 Fecha: 29 de Febrero del 2020
 
 Se muestran las visualizaciones de los siguientes algoritmos de ordenamiento (con sus respectivos indices y complejidades):
-0.- BUBBLE SORT        O(n²)
-1.- SELECTION SORT     O(n²)
-2.- INSERTION SORT     O(n²)
-3.- HEAP SORT          O(nlogn)
-4.- MERGE SORT         O(nlogn)
-5.- QUICK SORT         O(nlogn)
-6.- BOGO SORT // extra O(∞)
+0.- BUBBLE SORT          O(n²)
+1.- SELECTION SORT       O(n²)
+2.- INSERTION SORT       O(n²)
+3.- HEAP SORT            O(nlogn)
+4.- MERGE SORT           O(nlogn)
+5.- QUICK SORT           O(nlogn)
+6.- BOGO SORT // extra   O(∞)
 
 Cada uno de ellos es ejecutado en su hilo correspondiente, para seleccionar uno individualmente se modifican los parametros mostrados abajo
 
@@ -27,7 +27,7 @@ import processing.sound.*;
 
 int ancho = 1000;                       // Int que representa el ancho de la pantalla
 int largo = 1000;                       // Int que representa el largo de la pantalla
-int cant = 100;                         // Cantidad de elementos
+int cant = 200;                         // Cantidad de elementos
 int range = ancho/cant;                 // Ancho de cada elemento en a pantalla
 IntList arr = new IntList(cant);        // Arreglo donde guardaremos los elementos
 IntList cambio = new IntList(cant);     // Arreglo para definir el color de cada elemento
@@ -38,7 +38,7 @@ IntList heap = new IntList(cant+1);     // Arreglo extra para el heap de HeapSor
 // Preferentemente evitar modificarlos
 SinOsc[] sineWaves;                     // Arreglo de ondas
 float[] sineFreq;                       // Arreglo de frecuencias
-int numSines = 10;                      // NUmero de ondas
+int numSines = 10;                      // Numero de ondas
 float yoffset, frequency, detune;       // Variables para definir el sonido
 int inc = 0;                            // Variable para modificar la frecuencia de cada onda
 
@@ -50,8 +50,8 @@ String s = new String("");              // String para guardar que sorting esta 
 int comparaciones = 0;                  // Int que guarda cuantas comparaciones a hecho el respectivo sorting
 int cambios = 0;                        // Int que guarda cuantos cambios a hecho el respectivo sorting
 int accesos = 0;                        // Int que guarda cuantas accesos al arreglo a hecho el respectivo sorting
-int aum = range * 2;                    // Int que representa el rango multiplicado por 2
-int ejecutando_hilo=0;                  // Int que guarda que hilo esta siendo ejecutado, y por lo tanto que sorting
+boolean insertando = false;             // Bool que dice si se estan insertando elementos en el heap
+int ejecutando_hilo = 0;                // Int que guarda que hilo esta siendo ejecutado, y por lo tanto que sorting
 int del = 2;                            // Int que guarda el tiempo en milisegundos de la ejecucion de los algoritmos
 int del2 = 10;                          // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado
 int delshow = 3000;                     // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado final
@@ -59,12 +59,12 @@ int delshow = 3000;                     // Int que guarda el tiempo en milisegun
 /** MODIFICACIONES
 
      Este programa esta diseñado para funcionar con los parametros previamente establecidos, pero pueden ser modificados por quien lo use segun sus necesidades
-     
+     Si quiere omitir el Bogo Sort, cambiar su valor en el switch casea un valor mayor al presentado
      Si se quiere modificar el numero de elementos, modifique la variable cant
      Si quiere empezar por cierto algoritmo de ordenacion, modifique la variable ejecutando_hilo con el valor del indice del 
      algoritmo que quiera ejecutar (Se muestran los indices en la parte superior)
-     Si quiere modificar la velocidad de la presentacion, modifique la variable del para la ejecucion
-     ,la variable del2 para la presentacion del arreglo ordenado
+     Si quiere modificar la velocidad de la presentacion, modifique la variable del para la ejecucion,
+     la variable del2 para la presentacion del arreglo ordenado
      o la variable delshow para el tiempo de pantalla congelada entre un algoritmo y otro
      Preferentemente no modificar las variables del sonido
      Si se modifica el tamaño de la pantalla, modificar tambien los parametros ancho y largo
@@ -72,7 +72,7 @@ int delshow = 3000;                     // Int que guarda el tiempo en milisegun
 **/
 
 void setup(){
-  // Aqui inicializamos el el sonido que vamos a usar
+  // Aqui inicializamos el sonido que vamos a usar
   sineWaves = new SinOsc[numSines];
   sineFreq = new float[numSines]; 
   for (int i = 0; i < numSines; i++) {
@@ -88,7 +88,7 @@ void setup(){
      cambio.set(i,0);
   }
   
-  // La ejecucion de los algoritmos esta pensada para una pantalla de 1000x1000, sin embargo puede cambiarse a pantalla completa, pero la visualizacion se vera afectada
+  // La ejecucion de los algoritmos esta pensada para una pantalla de 1000x1000, sin embargo puede cambiarse a pantalla completa, pero la visualizacion se verá afectada
   size(1000,1000); // Si se modifica el tamaño de la pantalla, modificar tambien los parametros ancho y largo
   //fullScreen();
 }
@@ -102,14 +102,14 @@ void draw(){
   for(int i=0;i<cant;i++){
     // Si el cambio en i es 0, ese elemento no esta siendo usado, si es 1, esta siendo usado y se marca rojo, si es 2, esta totalmente ordenado y se marca verde
     if(heapo){   // El caso del HeapSort se imprime de forma especial, pues se asigna un color por cada nivel del arbol
-      if(i+1<=inde){
+      if(i+1<=inde&&cambio.get(i)==0){
         int pot=1,conta=0;
         for(pot=1;pot<i;pot*=2){conta++;}
         int r = 255; if(conta%3==0)r-=(conta/3)*100;
         int g = 255; if(conta%3==1)g-=(conta/3)*100;
         int b = 255; if(conta%3==2)b-=(conta/3)*100;
         fill(r,g,b);
-        rect(i*range,height-heap.get(i)*range,range,heap.get(i)*range);
+        rect(i*range,height-heap.get(i+1)*range,range,heap.get(i+1)*range);
       }else{
         if(cambio.get(i)==1)fill(255,0,0); else if(cambio.get(i)==2)fill(0,255,0); else fill(255);
         rect(i*range,height-arr.get(i)*range,range,arr.get(i)*range);
@@ -232,9 +232,6 @@ void shuff(){
 // ++++++++++++++++++++++++++++++++++++++++++++++++ BUBBLE SORT ++++++++++++++++++++++++++++++++++++++++++++++++
 
 void bubble(){
-  comparaciones=0;
-  cambios=0;
-  accesos=0;
   no_ejecutando=false;
   s = "BUBBLE SORT";
   for(int i=0;i<cant;i++){
@@ -242,6 +239,9 @@ void bubble(){
      cambio.set(i,0);
   }
   shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
   
   /** Bubble Sort
     La idea de Bubble Sort es la siguiente
@@ -255,18 +255,18 @@ void bubble(){
      for(int j=1;j<cant-i;j++){
        comparaciones++;
        accesos+=2;
+       cambio.set(j,1);
+       cambio.set(j-1,1);
        if(arr.get(j-1)>arr.get(j)){
          cambios++;
          accesos+=2;
-         cambio.set(j,1);
-         cambio.set(j-1,1);
          swap(j-1,j);
          delay(del);
-         cambio.set(j,0);
-         cambio.set(j-1,0);
          inc = arr.get(j-1)*range*3;
        }
        delay(del);
+       cambio.set(j,0);
+       cambio.set(j-1,0);
      }
   }
   
@@ -286,9 +286,6 @@ void bubble(){
 // ++++++++++++++++++++++++++++++++++++++++++++++++ SELECTION SORT ++++++++++++++++++++++++++++++++++++++++++++++++
 
 void selection(){
-  comparaciones=0;
-  cambios=0;
-  accesos=0;
   s = "SELECTION SORT";
   no_ejecutando=false;
   for(int i=0;i<cant;i++){
@@ -296,6 +293,9 @@ void selection(){
      cambio.set(i,0);
   }
   shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
   
   /** Selection Sort
     La idea de Selection Sort es la siguiente
@@ -350,16 +350,16 @@ void selection(){
 // ++++++++++++++++++++++++++++++++++++++++++++++++ INSERTION SORT ++++++++++++++++++++++++++++++++++++++++++++++++
 
 void insertion(){
-  comparaciones=0;
-  cambios=0;
-  accesos=0;
-  s = "INSERTION SORT";
   no_ejecutando=false;
+  s = "INSERTION SORT";
   for(int i=0;i<cant;i++){
      arr.set(i,i+1);
      cambio.set(i,0);
   }
   shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
   
   /** Insertion Sort
     La idea de Insertion Sort es la siguiente
@@ -420,6 +420,7 @@ int inde=0;   // Esta variable guarda el indice actual del arreglo heap, que gua
 
 // Funcion que inserta los elementos en el heap
 void insertar(int val){
+  insertando = true;
   accesos++;
   // Se incrementa el tamaño de arbol en 1, donde irá el elemento a insertar
   inde++;
@@ -433,28 +434,48 @@ void insertar(int val){
   // Mientras que no se llegue al nodo raiz, el cual ya no puede subir mas, se ejecuta el ciclo
   while(hijo>1){
     accesos+=2;
-    delay(del);
     comparaciones++;
     // Si el nodo hijo es menor que el padre, se intercambian y se repirte el proceso, sino, el proceso finaliza
     int padre = hijo/2;
+    cambio.set(hijo-1,1);
+    cambio.set(padre-1,1);
+    delay(del);
     if(heap.get(hijo)>heap.get(padre)){
        swap_heap(hijo,padre);
+       swap(hijo-1,padre-1);
+       accesos-=4;
+       cambios-=2;
+       delay(del);
+       cambio.set(hijo-1,0);
+       cambio.set(padre-1,0);
+       delay(del);
        hijo = padre;
        inc = hijo*100;
     }else{
+      insertando = false;
+      cambio.set(hijo-1,0);
+      cambio.set(padre-1,0);
+      delay(del);
       return; 
     }
   }
+  insertando = false;
 }
 
 // Funcion que elimina el elemento mas grande del heap
 void eliminar(){
   // Se intercambian el nodo raiz con el ultimo elemento
+  cambio.set(inde-1,1);
+  cambio.set(0,1);
+  delay(del);
   swap_heap(1,inde);
   accesos+=2;
   cambios++;
-  // Se añade al arreglo el elemento mas grande que queremos
-  arr.set(inde-1,heap.get(inde));
+  // Se añade al final arreglo el elemento mas grande que queremos
+  swap(inde-1,0);
+  delay(del);
+  cambio.set(inde-1,0);
+  cambio.set(0,0);
   // Se decrementa el tamaño del heap en uno, que es el elemento eliminado
   inde--;
   // Mientras el nodo padre este dentro de los parametros del heap, se ejecuta el ciclo
@@ -466,9 +487,8 @@ void eliminar(){
     int chido = padre;
     int h1 = padre*2;
     int h2 = padre*2+1;
-    delay(del);
     // Si el hijo 1 es mayor que el mayor, se toma el hijo 1 como mayor
-    if(h1<=inde&&heap.get(h1)>heap.get(chido)){
+    if(h1<=inde&&heap.get(h1)>heap.get(chido)){ 
       accesos+=2;
       comparaciones++;
       chido=h1;
@@ -483,10 +503,24 @@ void eliminar(){
       delay(del);
       inc = h2*100;
     }
+    cambio.set(padre-1,1);
+    cambio.set(chido-1,1);
+    delay(del);
     // Si el padre sigue siendo el mayor, se termina la ejecucion
-    if(chido==padre)return;
+    if(chido==padre){
+      delay(del);
+      cambio.set(padre-1,0);
+      return;
+    }
     // Si no, se intercambia el padre con el hijo mayor y se sigue la ejecucion con el
     swap_heap(padre,chido);
+    swap(chido-1,padre-1);
+    accesos-=4;
+    cambios-=2;
+    delay(del);
+    cambio.set(padre-1,0);
+    cambio.set(chido-1,0);
+    delay(del);
     padre=chido;
     delay(del);
   }
@@ -494,16 +528,16 @@ void eliminar(){
 
 void heap(){
   heapo=true;
-  comparaciones=0;
-  cambios=0;
-  accesos=0;
-  s = "HEAP SORT";
   no_ejecutando=false;
+  s = "HEAP SORT";
   for(int i=0;i<cant;i++){
      arr.set(i,i+1);
      cambio.set(i,0);
   }
   shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
   
   /** Heap Sort
     La idea de Heap Sort es la siguiente
@@ -573,7 +607,7 @@ IntList merge_arr(int l, int r,IntList cosa, int lreal, int rreal){
   a = merge_arr(0,a.size()-1,a,lreal,medreal);
   b = merge_arr(0,b.size()-1,b,medreal+1,rreal);
   // Se mezclan ambos arreglos
-  for(int i=l,uno=0,dos=0;i<=r;i++){   // Se inicializan las variables uno ydos adicionales en el for
+  for(int i=l,uno=0,dos=0;i<=r;i++){   // Se inicializan las variables uno y dos adicionales en el for
     // Las variables auxiliares uno y dos representan el indice del arreglo a y b, respectivamente, al que se esta haciendo referencia
     if(uno==a.size()){          // Si la variabe auxiliar uno es igual al tamaño del arreglo a, este arreglo ya fue tomado totalmente, y se toma
       accesos+=2;               // el siguiente elemento del arreglo b
@@ -608,16 +642,16 @@ IntList merge_arr(int l, int r,IntList cosa, int lreal, int rreal){
 }
 
 void merge(){
-  comparaciones=0;
-  cambios=0;
-  accesos=0;
+  no_ejecutando=false;  
   s = "MERGE SORT";
-  no_ejecutando=false;
   for(int i=0;i<cant;i++){
      arr.set(i,i+1);
      cambio.set(i,0);
   }
   shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
   
   /** Merge Sort
     La idea de Merge Sort es la siguiente
@@ -676,6 +710,7 @@ IntList quick_arr(int l, int r,IntList cosa, int lreal, int rreal){
   arr.set(lreal+med,pivot);
   a.append(pivot);
   for(int i=lreal,uno=0,dos=0;i<=rreal;i++){
+    cambio.set(lreal+med,1);
     if(uno<a.size()){
       arr.set(i,a.get(uno++));
     }else{
@@ -702,16 +737,16 @@ IntList quick_arr(int l, int r,IntList cosa, int lreal, int rreal){
 }
 
 void quick(){
-  comparaciones=0;
-  cambios=0;
-  accesos=0;
-  s = "QUICK SORT";
   no_ejecutando=false;
+  s = "QUICK SORT";
   for(int i=0;i<cant;i++){
      arr.set(i,i+1);
      cambio.set(i,0);
   }
   shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
   
   /** Quick Sort
     La idea de Quick Sort es la siguiente
@@ -744,16 +779,16 @@ void quick(){
 // Algoritmo de ordenamiento extra :D
 
 void bogo(){
-  comparaciones=0;
-  cambios=0;
-  accesos=0;
-  s = "BOGO SORT";
   no_ejecutando=false;
+  s = "BOGO SORT";
   for(int i=0;i<cant;i++){
      arr.set(i,i+1);
      cambio.set(i,0);
   }
   shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
   
   /** Bogo Sort
     La idea de Bogo Sort es la siguiente
@@ -770,7 +805,7 @@ void bogo(){
     // BLOQUE DE VISUALIZACION
     cambio.set(a,1);
     cambio.set(b,1);
-    int cosaa =40;
+    int cosaa = 40;
     inc = a*range*2;
     delay(cosaa);
     inc = b*range*5;
