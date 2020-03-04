@@ -10,6 +10,7 @@ Que tal, en este repositorio encontraras una visualizacion animada en Processing
 	- Heap Sort
 	- Merge Sort
 	- Quick Sort
+	- Radix Sort
 	- Bogo Sort (EXTRA)
 
 Todos ellos explicados paso a paso dentro del mismo codigo.

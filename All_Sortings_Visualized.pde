@@ -12,7 +12,8 @@ Se muestran las visualizaciones de los siguientes algoritmos de ordenamiento (co
 3.- HEAP SORT            O(nlogn)
 4.- MERGE SORT           O(nlogn)
 5.- QUICK SORT           O(nlogn)
-6.- BOGO SORT // extra   O(∞)
+6.- RADIX SORT           O(nm)
+7.- BOGO SORT // extra   O(∞)
 
 Cada uno de ellos es ejecutado en su hilo correspondiente, para seleccionar uno individualmente se modifican los parametros mostrados abajo
 
@@ -25,36 +26,39 @@ import processing.sound.*;
 
 // PARAMETROS
 
-int ancho = 1000;                       // Int que representa el ancho de la pantalla
-int largo = 1000;                       // Int que representa el largo de la pantalla
-int cant = 200;                         // Cantidad de elementos
-int range = ancho/cant;                 // Ancho de cada elemento en a pantalla
-IntList arr = new IntList(cant);        // Arreglo donde guardaremos los elementos
-IntList cambio = new IntList(cant);     // Arreglo para definir el color de cada elemento
-IntList heap = new IntList(cant+1);     // Arreglo extra para el heap de HeapSort
+int ancho = 1000;                             // Int que representa el ancho de la pantalla
+int largo = 1000;                             // Int que representa el largo de la pantalla
+int cant = 100;                               // Cantidad de elementos
+int range = ancho/cant;                       // Ancho de cada elemento en a pantalla
+IntList arr = new IntList(cant);              // Arreglo donde guardaremos los elementos
+IntList cambio = new IntList(cant);           // Arreglo para definir el color de cada elemento
+IntList heap = new IntList(cant+1);           // Arreglo extra para el heap de HeapSort
+ArrayList<IntList> rad = new ArrayList(10);   // Matriz que guarda los elementos segun sus digitos en Radix Sort
+boolean haya = true;                          // Boolque me indica si los elementos ya estan ordenados en Radix Sort
+int pot = 1;                                  // Int que me da el digito en el que voy a checar en Radix Sort
 
 // PARAMETROS DE SONIDO
 
 // Preferentemente evitar modificarlos
-SinOsc[] sineWaves;                     // Arreglo de ondas
-float[] sineFreq;                       // Arreglo de frecuencias
-int numSines = 10;                      // Numero de ondas
-float yoffset, frequency, detune;       // Variables para definir el sonido
-int inc = 0;                            // Variable para modificar la frecuencia de cada onda
+SinOsc[] sineWaves;                           // Arreglo de ondas
+float[] sineFreq;                             // Arreglo de frecuencias
+int numSines = 10;                            // Numero de ondas
+float yoffset, frequency, detune;             // Variables para definir el sonido
+int inc = 0;                                  // Variable para modificar la frecuencia de cada onda
 
 // MAS PARAMETROS
 
-boolean heapo=false;                    // Bool que representa si se esta ejecutando HeapSort
-boolean no_ejecutando=true;             // Bool que representa si cualquier sorting esta siendo ejecutado
-String s = new String("");              // String para guardar que sorting esta siendo ejecutado
-int comparaciones = 0;                  // Int que guarda cuantas comparaciones a hecho el respectivo sorting
-int cambios = 0;                        // Int que guarda cuantos cambios a hecho el respectivo sorting
-int accesos = 0;                        // Int que guarda cuantas accesos al arreglo a hecho el respectivo sorting
-boolean insertando = false;             // Bool que dice si se estan insertando elementos en el heap
-int ejecutando_hilo = 0;                // Int que guarda que hilo esta siendo ejecutado, y por lo tanto que sorting
-int del = 2;                            // Int que guarda el tiempo en milisegundos de la ejecucion de los algoritmos
-int del2 = 10;                          // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado
-int delshow = 3000;                     // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado final
+boolean heapo=false;                          // Bool que representa si se esta ejecutando HeapSort
+boolean no_ejecutando=true;                   // Bool que representa si cualquier sorting esta siendo ejecutado
+String s = new String("");                    // String para guardar que sorting esta siendo ejecutado
+int comparaciones = 0;                        // Int que guarda cuantas comparaciones a hecho el respectivo sorting
+int cambios = 0;                              // Int que guarda cuantos cambios a hecho el respectivo sorting
+int accesos = 0;                              // Int que guarda cuantas accesos al arreglo a hecho el respectivo sorting
+boolean insertando = false;                   // Bool que dice si se estan insertando elementos en el heap
+int ejecutando_hilo = 0;                      // Int que guarda que hilo esta siendo ejecutado, y por lo tanto que sorting
+int del = 5;                                  // Int que guarda el tiempo en milisegundos de la ejecucion de los algoritmos
+int del2 = 10;                                // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado
+int delshow = 3000;                           // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado final
 
 /** MODIFICACIONES
 
@@ -152,7 +156,10 @@ void draw(){
       case 5: thread("quick");
         ejecutando_hilo++;
         break;
-      case 6: thread("bogo");
+      case 6: thread("radix");
+        ejecutando_hilo++;
+        break;
+      case 7: thread("bogo");
         ejecutando_hilo++;
         break;
       default: ejecutando_hilo = 0;
@@ -763,6 +770,71 @@ void quick(){
   
   // BLOQUE DE VISUALIZACION
   inc=0;
+  for(int j=0;j<cant;j++){
+      cambio.set(j,2);
+      inc = arr.get(j)*range*3;
+      delay(del2);
+  }
+  inc = 0;
+  delay(delshow);
+  no_ejecutando=true;
+}
+
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++ RADIX SORT ++++++++++++++++++++++++++++++++++++++++++++++++
+
+void radix(){
+  no_ejecutando=false;
+  s = "RADIX SORT";
+  for(int i=0;i<cant;i++){
+     arr.set(i,i+1);
+     cambio.set(i,0);
+  }
+  for(int i=0;i<10;i++){
+    rad.add(new IntList());
+  }
+  shuff();
+  comparaciones=0;
+  cambios=0;
+  accesos=0;
+  
+  /** Radix Sort
+    La idea de Radix Sort es la siguiente
+    Ordenamos los numeros segun su digito, y los tomamos segun las potencias de 10
+    Tenemos una arreglo de arreglos de 10 casillas, y agregamos cada elemento segun el digito que tomemos
+    Por cada iteracion, la potencia se multiplica por 10 para checar el siguiente digito en potencia de 10 de cada numero
+    Al final no se ocupan comparaciones ya que todos los digitos quedaran ordenados por todos los digitos que tienen
+  **/
+  pot = 1;
+  while(haya){
+    haya = false;
+    for(int i = 0;i < cant;i++){
+      accesos++;
+      int aux = (arr.get(i)/pot)%10;
+      if(aux!=0)haya = true;
+      rad.get(aux).append(arr.get(i));
+      delay(del);
+    }
+    int index = 0;
+    for(int i=0;i<10;i++){
+       for(int j=0;j<rad.get(i).size();j++){
+          arr.set(index++, rad.get(i).get(j));
+          cambio.set(index,1);
+          delay(del);
+          cambio.set(index,0);
+          delay(del);
+       }
+       delay(del);
+    }
+    for(int i=0;i<10;i++){
+      rad.set(i,new IntList());
+      delay(del);
+    }
+    pot*=10;
+  }
+  
+  // BLOQUE DE VISUALIZACION
+  inc=0; 
   for(int j=0;j<cant;j++){
       cambio.set(j,2);
       inc = arr.get(j)*range*3;
