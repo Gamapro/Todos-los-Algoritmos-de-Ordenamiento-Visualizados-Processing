@@ -56,7 +56,7 @@ int cambios = 0;                              // Int que guarda cuantos cambios 
 int accesos = 0;                              // Int que guarda cuantas accesos al arreglo a hecho el respectivo sorting
 boolean insertando = false;                   // Bool que dice si se estan insertando elementos en el heap
 int ejecutando_hilo = 0;                      // Int que guarda que hilo esta siendo ejecutado, y por lo tanto que sorting
-int del = 5;                                  // Int que guarda el tiempo en milisegundos de la ejecucion de los algoritmos
+int del = 2;                                  // Int que guarda el tiempo en milisegundos de la ejecucion de los algoritmos
 int del2 = 10;                                // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado
 int delshow = 3000;                           // Int que guarda el tiempo en milisegundos de la impresion del arreglo ordenado final
 
@@ -72,6 +72,7 @@ int delshow = 3000;                           // Int que guarda el tiempo en mil
      o la variable delshow para el tiempo de pantalla congelada entre un algoritmo y otro
      Preferentemente no modificar las variables del sonido
      Si se modifica el tamaño de la pantalla, modificar tambien los parametros ancho y largo
+     Para omitir el sonido, modifique la variable numSines a 0
      
 **/
 
@@ -808,21 +809,26 @@ void radix(){
   pot = 1;
   while(haya){
     haya = false;
+    inc = 0;
     for(int i = 0;i < cant;i++){
       accesos++;
       int aux = (arr.get(i)/pot)%10;
       if(aux!=0)haya = true;
       rad.get(aux).append(arr.get(i));
       delay(del);
+      inc+=100*(aux+1);
     }
     int index = 0;
+    inc = 0;
     for(int i=0;i<10;i++){
        for(int j=0;j<rad.get(i).size();j++){
+          inc = arr.get(j)*range*3;
           arr.set(index++, rad.get(i).get(j));
           cambio.set(index,1);
           delay(del);
           cambio.set(index,0);
           delay(del);
+          cambios++;
        }
        delay(del);
     }
