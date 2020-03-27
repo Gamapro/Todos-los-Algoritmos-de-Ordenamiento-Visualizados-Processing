@@ -139,28 +139,36 @@ void draw(){
   // Cada sorting cambia dependiendo a la variable ejecutando_hilo
   if(no_ejecutando){
     switch(ejecutando_hilo){
-      case 0: thread("bubble");
+      case 0:  no_ejecutando=true; 
+        thread("bubble");
         ejecutando_hilo++;
         break;
-      case 1: thread("selection");
+      case 1:  no_ejecutando=true; 
+        thread("selection");
         ejecutando_hilo++;
         break;
-      case 2: thread("insertion");
+      case 2:  no_ejecutando=true; 
+        thread("insertion");
         ejecutando_hilo++;
         break;
-      case 3: thread("heap");
+      case 3:  no_ejecutando=true;
+        thread("heap");
         ejecutando_hilo++;
         break;
-      case 4: thread("merge");
+      case 4:  no_ejecutando=true; 
+        thread("merge");
         ejecutando_hilo++;
         break;
-      case 5: thread("quick");
+      case 5:  no_ejecutando=true;
+        thread("quick");
         ejecutando_hilo++;
         break;
-      case 6: thread("radix");
+      case 6:  no_ejecutando=true;
+        thread("radix");
         ejecutando_hilo++;
         break;
-      case 7: thread("bogo");
+      case 7:  no_ejecutando=true; 
+        thread("bogo");
         ejecutando_hilo++;
         break;
       default: ejecutando_hilo = 0;
